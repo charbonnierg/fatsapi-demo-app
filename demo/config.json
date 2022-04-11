@@ -1,0 +1,17 @@
+{
+    "logging": {
+        "level": "INFO"
+    },
+    "server": {
+        "port": 7777,
+        "debug": true
+    },
+    "database": {
+        "path": "./demo/db.json"
+    },
+    "telemetry": {
+        "traces_enabled": false,
+        "metrics_enabled": true,
+        "traces_exporter": "otlp"
+    }
+}
