@@ -9,6 +9,11 @@
     "database": {
         "path": "./demo/db.json"
     },
+    "oidc": {
+        "enabled": true,
+        "issuer_url": "https://lemur-10.cloud-iam.com/auth/realms/demo-app",
+        "client_id": "demo-app"
+    },
     "telemetry": {
         "traces_enabled": false,
         "metrics_enabled": true,

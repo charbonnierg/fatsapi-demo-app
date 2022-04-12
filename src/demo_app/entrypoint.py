@@ -13,8 +13,10 @@ from demo_app.settings import AppSettings
 
 from .container import AppContainer
 from .hooks.database import database_hook, database_monitor
+from .providers.cors import cors_provider
 from .providers.logger import structured_logging_provider
 from .providers.metrics import prometheus_metrics_provider
+from .providers.oidc import oidc_provider
 from .providers.tracing import openelemetry_traces_provider
 from .routes import debug_router, employees_router
 
@@ -36,6 +38,7 @@ def create_container(
         config_file=config_file,
         # Settings must be an instance of AppSettings
         settings=settings or AppSettings(),
+        # Application routers
         routers=[
             # Router can be APIRouter instances
             employees_router,
@@ -50,9 +53,16 @@ def create_container(
         tasks=[database_monitor],
         # Providers are functions which accept an application container and return None
         providers=[
-            prometheus_metrics_provider,
-            openelemetry_traces_provider,
+            # Add logger
             structured_logging_provider,
+            # Add CORS
+            cors_provider,
+            # Add prometheus metrics (optional)
+            prometheus_metrics_provider,
+            # Add traces (optional)
+            openelemetry_traces_provider,
+            # Add OpenID Connect authentication (optional)
+            oidc_provider,
         ],
     )
 

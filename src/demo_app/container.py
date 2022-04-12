@@ -71,6 +71,7 @@ class AppContainer:
     stack: contextlib.AsyncExitStack = dataclasses.field(init=False, repr=False)
     app: fastapi.FastAPI = dataclasses.field(init=False, repr=False)
     server: uvicorn.Server = dataclasses.field(init=False, repr=False)
+    submitted_hooks: typing.List[str] = dataclasses.field(init=False, repr=False)
     submitted_tasks: typing.Dict[str, AppTask[typing.Any]] = dataclasses.field(
         init=False, repr=False
     )
@@ -94,6 +95,7 @@ class AppContainer:
             description=self.meta.description,
             version=self.meta.version,
             exception_handlers=ERROR_HANDLERS,
+            swagger_ui_init_oauth={"clientId": "fastapi-demo-app-docs"},
         )
         # Create uvicorn config
         uvicorn_config = uvicorn.Config(
@@ -113,6 +115,7 @@ class AppContainer:
         self.server = uvicorn.Server(uvicorn_config)
         # Initialize pending tasks
         self.submitted_tasks = {}
+        self.submitted_hooks = []
         # Execute providers
         for provider in self.providers:
             provider(self)
@@ -145,6 +148,7 @@ class AppContainer:
                     continue
                 # Resources have access to the container
                 await self.stack.enter_async_context(context)
+                self.submitted_hooks.append(hook.__name__)
             # Start tasks
             for task in self.tasks:
                 _task: typing.Optional[AppTask[typing.Any]]

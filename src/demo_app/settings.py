@@ -56,10 +56,12 @@ class ServerSettings(pydantic.BaseSettings, case_sensitive=False, env_prefix="se
     limit_max_requests: typing.Optional[int] = None
 
 
-class LogSettings(pydantic.BaseSettings, case_sensitive=False, env_prefix="log_"):
+class LogSettings(pydantic.BaseSettings, case_sensitive=False, env_prefix="logging_"):
     # Log settings
     access_log: bool = True
     level: typing.Optional[str] = None
+    colors: bool = True
+    renderer: typing.Literal["console", "json"] = "console"
 
 
 class TelemetrySettings(
@@ -87,19 +89,33 @@ class OTLPSettings(pydantic.BaseSettings, env_prefix="otlp_"):
     compression: typing.Literal["none", "deflate", "gzip"] = pydantic.Field(
         None, env="OTEL_EXPORTER_OTLP_COMPRESSION"
     )
-    certificate_file: typing.Optional[str] = pydantic.Field(
-        None, env="OTEL_EXPORTER_OTLP_CERTIFICATE"
-    )
 
 
-class AppSettings(
-    pydantic.BaseSettings, case_sensitive=False, env_nested_delimiter="_"
-):
+class OIDCSettings(pydantic.BaseSettings, case_sensitive=False, env_prefix="oidc_"):
+    enabled: bool = True
+    issuer_url: str = "https://lemur-10.cloud-iam.com/auth/realms/demo-app"
+    client_id: str = "demo-app"
+    algorithms: typing.List[str] = ["RS256"]
+
+
+class CORSSettings(pydantic.BaseSettings, case_sensitive=False, env_prefix="cors_"):
+    allow_origins: typing.List[str] = ["*"]
+    allow_methods: typing.List[str] = ["GET", "PATCH", "POST", "PUT", "DELETE", "HEAD"]
+    allow_headers: typing.List[str] = []
+    allow_credentials: bool = True
+    allow_origin_regex: typing.Optional[str] = None
+    expose_headers: typing.List[str] = []
+    max_age: int = 600
+
+
+class AppSettings(pydantic.BaseSettings, case_sensitive=False):
     database: DatabaseSettings = pydantic.Field(default_factory=DatabaseSettings)
     logging: LogSettings = pydantic.Field(default_factory=LogSettings)
     server: ServerSettings = pydantic.Field(default_factory=ServerSettings)
     telemetry: TelemetrySettings = pydantic.Field(default_factory=TelemetrySettings)
     otlp: OTLPSettings = pydantic.Field(default_factory=OTLPSettings)
+    cors: CORSSettings = pydantic.Field(default_factory=CORSSettings)
+    oidc: OIDCSettings = pydantic.Field(default_factory=OIDCSettings)
 
     @classmethod
     def from_config_file(

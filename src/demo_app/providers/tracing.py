@@ -12,7 +12,7 @@ def openelemetry_traces_provider(container: AppContainer) -> None:
     """
     if container.settings.telemetry.traces_enabled:
         from opentelemetry import trace
-        from opentelemetry.exporter.otlp.proto.http.trace_exporter import (
+        from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (
             OTLPSpanExporter,
         )
         from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
@@ -38,7 +38,6 @@ def openelemetry_traces_provider(container: AppContainer) -> None:
                 headers=container.settings.otlp.headers,
                 compression=container.settings.otlp.compression,  # type: ignore[arg-type]
                 endpoint=container.settings.otlp.endpoint,
-                certificate_file=container.settings.otlp.certificate_file,
             )
         else:
             exporter = ConsoleSpanExporter()
