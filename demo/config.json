@@ -1,6 +1,7 @@
 {
     "logging": {
-        "level": "INFO"
+        "level": "INFO",
+        "renderer": "json"
     },
     "server": {
         "port": 7777,

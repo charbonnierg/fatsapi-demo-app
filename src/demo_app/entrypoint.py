@@ -24,7 +24,7 @@ from .routes import debug_router, employees_router
 def create_container(
     settings: typing.Optional[AppSettings] = None,
     config_file: typing.Union[pathlib.Path, str, None] = None,
-) -> AppContainer:
+) -> AppContainer[AppSettings]:
     """Application container factory.
 
     Modify this function to include new routers, new hooks or new providers.

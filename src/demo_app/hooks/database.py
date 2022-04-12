@@ -10,12 +10,13 @@ from starlette.requests import Request
 from structlog import get_logger
 
 from demo_app.container import AppContainer
+from demo_app.settings import AppSettings
 from demo_app.lib import EmployeeDatabase
 
 
 @contextlib.asynccontextmanager
 async def database_hook(
-    container: AppContainer,
+    container: AppContainer[AppSettings],
 ) -> typing.AsyncIterator[EmployeeDatabase]:
     """A hook providing a database instance in application state."""
     logger = get_logger().bind(logger="database-hook")
@@ -35,7 +36,7 @@ async def database_hook(
         logger.warning(f"Closing database in {container.settings.database.path}")
 
 
-async def database_monitor(container: AppContainer) -> None:
+async def database_monitor(container: AppContainer[AppSettings]) -> None:
     """A task to monitor database health (mocked since db is a file)"""
     logger = get_logger().bind(logger="database-monitor")
     # Access the database from the container

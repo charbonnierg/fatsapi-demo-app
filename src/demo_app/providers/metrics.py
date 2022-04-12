@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from demo_app.container import AppContainer
+from demo_app.settings import AppSettings
 
 
-def prometheus_metrics_provider(container: AppContainer) -> None:
+def prometheus_metrics_provider(container: AppContainer[AppSettings]) -> None:
     """Add prometheus metrics to your application."""
     if container.settings.telemetry.metrics_enabled:
         from prometheus_fastapi_instrumentator import Instrumentator

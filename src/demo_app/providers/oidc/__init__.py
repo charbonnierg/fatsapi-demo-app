@@ -3,10 +3,10 @@ from __future__ import annotations
 from typing import List
 
 import fastapi
-from starlette.requests import Request
 from starlette.status import HTTP_403_FORBIDDEN
 
 from demo_app.container import AppContainer
+from demo_app.settings import AppSettings
 from demo_app.providers.oidc.errors import NotAllowedError
 
 from .provider import OIDCAuth, OIDCAuthProvider
@@ -34,7 +34,7 @@ def get_user(roles: List[str] = []):
     return fastapi.Depends(_get_current_user_with_roles)
 
 
-def oidc_provider(container: AppContainer) -> None:
+def oidc_provider(container: AppContainer[AppSettings]) -> None:
     if container.settings.oidc.enabled:
         # Set client ID on swagger UI
         container.app.swagger_ui_init_oauth[

@@ -3,9 +3,10 @@ from __future__ import annotations
 from starlette.middleware.cors import CORSMiddleware
 
 from demo_app.container import AppContainer
+from demo_app.settings import AppSettings
 
 
-def cors_provider(container: AppContainer) -> None:
+def cors_provider(container: AppContainer[AppSettings]) -> None:
     """Add CORS support to the application"""
     container.app.add_middleware(
         CORSMiddleware,

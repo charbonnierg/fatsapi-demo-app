@@ -3,9 +3,10 @@ from __future__ import annotations
 from typing import Union
 
 from demo_app.container import AppContainer
+from demo_app.settings import AppSettings
 
 
-def openelemetry_traces_provider(container: AppContainer) -> None:
+def openelemetry_traces_provider(container: AppContainer[AppSettings]) -> None:
     """Add opentelemetry traces to your application.
 
     See: https://opentelemetry.io/docs/instrumentation/python/exporters/

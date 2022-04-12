@@ -11,9 +11,8 @@ import fastapi
 import pkg_resources
 import pydantic
 
-if typing.TYPE_CHECKING:
-    from .lib import EmployeeDatabase
 
+SettingsT = typing.TypeVar("SettingsT", bound="BaseAppSettings")
 
 PKG_NAME = "demo-app"
 DEMO_DUMP = pathlib.Path(__file__).parent / "data" / "data_management.json"
@@ -108,8 +107,7 @@ class CORSSettings(pydantic.BaseSettings, case_sensitive=False, env_prefix="cors
     max_age: int = 600
 
 
-class AppSettings(pydantic.BaseSettings, case_sensitive=False):
-    database: DatabaseSettings = pydantic.Field(default_factory=DatabaseSettings)
+class BaseAppSettings(pydantic.BaseSettings, case_sensitive=False):
     logging: LogSettings = pydantic.Field(default_factory=LogSettings)
     server: ServerSettings = pydantic.Field(default_factory=ServerSettings)
     telemetry: TelemetrySettings = pydantic.Field(default_factory=TelemetrySettings)
@@ -119,13 +117,13 @@ class AppSettings(pydantic.BaseSettings, case_sensitive=False):
 
     @classmethod
     def from_config_file(
-        cls,
-        override_settings: typing.Optional[AppSettings] = None,
+        cls: typing.Type[SettingsT],
+        override_settings: typing.Optional[SettingsT] = None,
         config_file: typing.Optional[typing.Union[str, pathlib.Path]] = None,
-    ) -> AppSettings:
+    ) -> SettingsT:
         """Parse application settings from file AND environment variables.
 
-        Additionally, settings can be provided as a AppSettings instance.
+        Additionally, settings can be provided as a Settings instance.
         Those settings will take precedence over both environment and file settings.
         """
         files_settings = (
@@ -137,23 +135,23 @@ class AppSettings(pydantic.BaseSettings, case_sensitive=False):
             # First parse file
             config_file_path = pathlib.Path(files_settings.path).resolve(True)
             # Load settings from file
-            app_settings_from_file = AppSettings.parse_file(
+            app_settings_from_file = cls.parse_file(
                 config_file_path, content_type="application/json"
             )
             # Load settings from env
-            app_settings_from_env = AppSettings()
+            app_settings_from_env = cls()
             # Environment variables take precedence over file configuration
-            app_settings = AppSettings.parse_obj(
+            app_settings = cls.parse_obj(
                 merge(
                     app_settings_from_file.dict(exclude_unset=True),
                     app_settings_from_env.dict(exclude_unset=True),
                 )
             )
         else:
-            app_settings = AppSettings()
+            app_settings = cls()
         # Override settings take precedence over both file configuration and environment variables
         if override_settings:
-            app_settings = AppSettings.parse_obj(
+            app_settings = cls.parse_obj(
                 merge(
                     app_settings.dict(exclude_unset=True),
                     override_settings.dict(exclude_unset=True),
@@ -162,10 +160,19 @@ class AppSettings(pydantic.BaseSettings, case_sensitive=False):
         # Return settings without override by default
         return app_settings
 
-    @staticmethod
-    def provider(request: fastapi.Request) -> EmployeeDatabase:
+    @classmethod
+    def provider(cls: typing.Type[SettingsT], request: fastapi.Request) -> SettingsT:
         """Provide the database fro a given FastAPI request."""
         return request.app.state.container.settings  # type: ignore[no-any-return]
+
+
+class AppSettings(BaseAppSettings):
+    """Application settings inherit from base settings.
+
+    Only database settings is specific to this application.
+    Eveything else can be shared between applications.
+    """
+    database: DatabaseSettings = pydantic.Field(default_factory=DatabaseSettings)
 
 
 def merge(

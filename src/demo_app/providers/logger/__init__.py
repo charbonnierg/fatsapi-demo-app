@@ -11,11 +11,12 @@ from starlette.responses import Response
 from uvicorn.config import LOG_LEVELS
 
 from demo_app.container import AppContainer
+from demo_app.settings import AppSettings
 
 from ._log_levels import make_filtering_bound_logger
 
 
-def structured_logging_provider(container: AppContainer) -> None:
+def structured_logging_provider(container: AppContainer[AppSettings]) -> None:
     """Add structured logger to the application."""
     if container.settings.telemetry.traces_enabled:
         from opentelemetry import trace

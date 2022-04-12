@@ -47,7 +47,7 @@ def install_virtualenv() -> None:
 def install_project() -> None:
     """Installing project in editable mode using pip"""
     try:
-        subprocess.run([VENV_PYTHON, "-m", "pip", "install", "-e", ".[dev,telemetry]"])
+        subprocess.run([VENV_PYTHON, "-m", "pip", "install", "-e", ".[dev,telemetry,oidc]"])
     except Exception:
         # No need to print traceback, error will be printed from subprocess stderr
         sys.exit(1)
