@@ -13,17 +13,19 @@ import types
 import typing
 
 import fastapi
-from pydantic import BaseSettings
 import uvicorn
 
 from .errors import ERROR_HANDLERS
-from .settings import AppMeta, AppSettings, ConfigFilesSettings
+from .settings import AppMeta, AppSettings, BaseAppSettings, ConfigFilesSettings
 
 if typing.TYPE_CHECKING:
     from fastapi.testclient import TestClient
 
+
 T = typing.TypeVar("T")
-SettingsT = typing.TypeVar("SettingsT", bound=BaseSettings)
+SettingsT = typing.TypeVar("SettingsT", bound=BaseAppSettings)
+
+
 
 @dataclasses.dataclass
 class AppContainer(typing.Generic[SettingsT]):
@@ -35,7 +37,7 @@ class AppContainer(typing.Generic[SettingsT]):
     # Application metadata
     meta: AppMeta = dataclasses.field(default_factory=AppMeta)
     # Application settings
-    settings: SettingsT = dataclasses.field(default_factory=AppSettings)
+    settings: SettingsT = dataclasses.field(default_factory=BaseAppSettings)
     # Configuration file
     config_file: typing.Union[pathlib.Path, str, None] = dataclasses.field(
         default_factory=lambda: ConfigFilesSettings().path
