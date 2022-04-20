@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import logging
 import time
-import uuid
-from typing import Any, Awaitable, Callable
+from typing import Any, Awaitable, Callable, Union
 
 import structlog
 from starlette.requests import Request
@@ -20,13 +19,17 @@ def structured_logging_provider(container: AppContainer[AppSettings]) -> None:
     """Add structured logger to the application."""
     if container.settings.telemetry.traces_enabled:
         from opentelemetry import trace
+
         tracer = trace.get_tracer(__name__)
     else:
         tracer = None
     level = container.settings.logging.level or "info"
     level_int = LOG_LEVELS[level.lower()]
+    renderer: Union[structlog.dev.ConsoleRenderer, structlog.processors.JSONRenderer]
     if container.settings.logging.renderer == "console":
-        renderer = structlog.dev.ConsoleRenderer(colors=container.settings.logging.colors)
+        renderer = structlog.dev.ConsoleRenderer(
+            colors=container.settings.logging.colors
+        )
     else:
         renderer = structlog.processors.JSONRenderer(sort_keys=True)
     structlog.configure(
@@ -119,7 +122,9 @@ def structured_logging_provider(container: AppContainer[AppSettings]) -> None:
                 span_context = trace.get_current_span().get_span_context()
                 trace_id = span_context.trace_id
                 span_id = span_context.span_id
-                structlog.threadlocal.bind_threadlocal(span_id=format(span_id, "02x"), trace_id=format(trace_id, "02x"))
+                structlog.threadlocal.bind_threadlocal(
+                    span_id=format(span_id, "02x"), trace_id=format(trace_id, "02x")
+                )
             # Measure handler time
             start_time = time.time()
             try:
